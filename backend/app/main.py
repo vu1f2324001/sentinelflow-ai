@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
-app = FastAPI(title="SentinelFlow AI API", version="1.0.0")
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
