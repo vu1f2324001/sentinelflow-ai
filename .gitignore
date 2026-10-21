@@ -1,0 +1,12 @@
+node_modules/ 
+frontend/node_modules/ 
+dist/ 
+frontend/dist/ 
+.env 
+__pycache__/ 
+*.pyc 
+venv/ 
+.venv/ 
+backend/venv/ 
+npm-debug.log* 
+.DS_Store
