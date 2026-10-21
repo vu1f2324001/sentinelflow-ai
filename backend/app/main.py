@@ -4,6 +4,10 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 app = FastAPI()
+@app.get("/")
+def read_root():
+    return {"status": "online", "message": "SentinelFlow AI Backend is running"}
+    
 
 app.add_middleware(
     CORSMiddleware,
