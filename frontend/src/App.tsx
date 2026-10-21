@@ -19,7 +19,7 @@ export default function App() {
   const [lang, setLang] = useState<'en' | 'mr' | 'hi'>('en');
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState<boolean>(false);
-
+  const API_BASE_URL = "https://sentinelflow-ai-zuqm.vercel.app";
   const t = {
     en: {
       brand: "SENTINELFLOW AI",
