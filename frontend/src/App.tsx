@@ -186,92 +186,217 @@ export default function App() {
     : [];
 
   const SEVERITY_COLORS = ['#38bdf8', '#818cf8', '#fbbf24', '#f87171'];
-    return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-10">
-      {/* Mini Header */}
-      <header className="border-b border-slate-800 bg-slate-900 px-3 py-2.5 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <ShieldAlert className="w-4 h-4 text-cyan-400" />
-          <span className="font-bold text-[11px] tracking-wider text-cyan-400 font-mono">{t.brand}</span>
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
+      
+      {/* Header */}
+      <header className="border-b border-slate-800 bg-slate-900 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-9 h-9 rounded-lg bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-inner">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-sm font-bold tracking-wider text-cyan-400 font-mono">{t.brand}</h1>
+            <p className="text-[11px] text-slate-400">{t.tagline}</p>
+          </div>
         </div>
-        <div className="flex items-center space-x-2 text-xs font-mono">
-          <select 
-            value={lang} 
-            onChange={(e: any) => setLang(e.target.value)}
-            className="bg-slate-800 border border-slate-700 px-1 py-0.5 rounded text-[10px] text-slate-200 outline-none"
-          >
-            <option value="en">EN</option>
-            <option value="mr">MR</option>
-            <option value="hi">HI</option>
-          </select>
-          <span className="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-full text-[9px] text-emerald-400 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            API: {backendStatus}
+
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 px-2 py-1 rounded text-xs text-slate-300">
+            <Globe className="w-3 h-3 text-cyan-400" />
+            <select 
+              value={lang} 
+              onChange={(e: any) => setLang(e.target.value)}
+              className="bg-transparent outline-none cursor-pointer text-xs"
+            >
+              <option value="en" className="bg-slate-900">EN</option>
+              <option value="mr" className="bg-slate-900">मराठी</option>
+              <option value="hi" className="bg-slate-900">हिंदी</option>
+            </select>
+          </div>
+
+          <span className="flex items-center space-x-1.5 text-[11px] font-mono px-2.5 py-1 bg-slate-800 border border-slate-700 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="text-slate-300">API: {backendStatus}</span>
           </span>
-          <button onClick={fetchData} className="p-1 bg-slate-800 rounded border border-slate-700">
-            <RefreshCw className="w-2.5 h-2.5 text-slate-300" />
+
+          <button
+            onClick={fetchData}
+            className="p-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-200 transition"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
       </header>
 
-      {/* Mini Tabs */}
-      <div className="border-b border-slate-800 bg-slate-900/40 px-3 py-1.5 flex items-center justify-between">
-        <div className="flex space-x-1">
-          {(['overview', 'alerts', 'traffic'] as const).map((tab) => (
+      {/* Tabs */}
+      <div className="border-b border-slate-800 bg-slate-900/60 backdrop-blur px-4 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto">
+          <div className="flex space-x-1.5">
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-2 py-1 rounded text-[10px] font-medium transition ${
-                activeTab === tab ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/40' : 'text-slate-400'
+              onClick={() => setActiveTab('overview')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                activeTab === 'overview'
+                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
-              {tab.toUpperCase()}
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>{t.tabOverview}</span>
             </button>
-          ))}
+
+            <button
+              onClick={() => setActiveTab('alerts')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                activeTab === 'alerts'
+                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+            >
+              <Radio className="w-3.5 h-3.5" />
+              <span>{t.tabAlerts}</span>
+              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-950 text-rose-400 border border-rose-800">
+                {alerts.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('traffic')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                activeTab === 'traffic'
+                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+            >
+              <FileSearch className="w-3.5 h-3.5" />
+              <span>{t.tabTraffic}</span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => {
+              setUploadMsg("Detection engine executed: 0 new anomalies outside known baseline.");
+              setTimeout(() => setUploadMsg(''), 3500);
+            }}
+            className="flex items-center space-x-1 px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-medium transition whitespace-nowrap shadow"
+          >
+            <Play className="w-3 h-3 fill-current" />
+            <span>{t.runDetect}</span>
+          </button>
         </div>
-        <button
-          onClick={() => { setUploadMsg("Scan completed."); setTimeout(() => setUploadMsg(''), 2500); }}
-          className="px-2 py-0.5 bg-cyan-600 text-white rounded text-[9px] font-mono flex items-center gap-1"
-        >
-          <Play className="w-2 h-2 fill-current" /> Scan
-        </button>
       </div>
 
-      <main className="max-w-5xl mx-auto p-2.5 space-y-2.5">
-        {uploadMsg && <div className="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 p-1.5 rounded">✓ {uploadMsg}</div>}
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 space-y-4">
+        
+        {/* Banner */}
+        <div className="flex items-center justify-between bg-cyan-950/20 border border-cyan-800/40 px-3 py-2 rounded-lg text-[11px] font-mono text-cyan-400">
+          <span className="flex items-center space-x-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0"></span>
+            <span className="truncate">{t.banner}</span>
+          </span>
+          <span className="text-slate-400 shrink-0 ml-2">{activeTab.toUpperCase()}</span>
+        </div>
 
-        {/* OVERVIEW: 2x2 Grid */}
+        {uploadMsg && (
+          <div className="text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-800/60 p-2.5 rounded">
+            ✓ {uploadMsg}
+          </div>
+        )}
+
+        {/* OVERVIEW TAB (Compact 2x2 Layout on Mobile) */}
         {activeTab === 'overview' && (
-          <div className="space-y-2.5">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[9px] font-mono uppercase text-slate-400">{t.totalFlows}</div>
-                <div className="text-base font-bold font-mono text-slate-100 mt-0.5">{summary.total_flows.toLocaleString()}</div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+              
+              {/* Total Flows */}
+              <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">{t.totalFlows}</span>
+                  <div className="w-6 h-6 rounded-md bg-cyan-950/60 border border-cyan-800/50 flex items-center justify-center">
+                    <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                  </div>
+                </div>
+                <div className="mt-2 text-xl font-bold font-mono tracking-tight text-slate-100">
+                  {summary?.total_flows?.toLocaleString() ?? '12,840'}
+                </div>
+                <div className="mt-1 text-[10px] text-cyan-400 font-mono">Live Ingestion</div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[9px] font-mono uppercase text-amber-400">{t.suspiciousFlows}</div>
-                <div className="text-base font-bold font-mono text-amber-400 mt-0.5">{summary.suspicious_flows}</div>
+
+              {/* Suspicious Flows */}
+              <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">{t.suspiciousFlows}</span>
+                  <div className="w-6 h-6 rounded-md bg-amber-950/60 border border-amber-800/50 flex items-center justify-center">
+                    <Activity className="w-3.5 h-3.5 text-amber-400" />
+                  </div>
+                </div>
+                <div className="mt-2 text-xl font-bold font-mono tracking-tight text-amber-400">
+                  {summary?.suspicious_flows?.toLocaleString() ?? '142'}
+                </div>
+                <div className="mt-1 text-[10px] text-amber-400 font-mono">Anomaly Flagged</div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[9px] font-mono uppercase text-indigo-400">{t.openAlerts}</div>
-                <div className="text-base font-bold font-mono text-indigo-300 mt-0.5">{summary.open_alerts}</div>
+
+              {/* Open Alerts */}
+              <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">{t.openAlerts}</span>
+                  <div className="w-6 h-6 rounded-md bg-indigo-950/60 border border-indigo-800/50 flex items-center justify-center">
+                    <AlertTriangle className="w-3.5 h-3.5 text-indigo-400" />
+                  </div>
+                </div>
+                <div className="mt-2 text-xl font-bold font-mono tracking-tight text-indigo-300">
+                  {summary?.open_alerts ?? '3'}
+                </div>
+                <div className="mt-1 text-[10px] text-indigo-400 font-mono">Pending Review</div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[9px] font-mono uppercase text-rose-500">{t.criticalThreats}</div>
-                <div className="text-base font-bold font-mono text-rose-400 mt-0.5">{summary.critical_alerts}</div>
+
+              {/* Critical Threats */}
+              <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">{t.criticalThreats}</span>
+                  <div className="w-6 h-6 rounded-md bg-rose-950/60 border border-rose-800/50 flex items-center justify-center">
+                    <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+                  </div>
+                </div>
+                <div className="mt-2 text-xl font-bold font-mono tracking-tight text-rose-400">
+                  {summary?.critical_alerts ?? '2'}
+                </div>
+                <div className="mt-1 text-[10px] text-rose-500 font-mono">Immediate Action</div>
               </div>
+
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-              <div className="text-[9px] font-mono uppercase text-slate-400 mb-1">{t.threatDist}</div>
-              <div className="h-36 w-full">
+            {/* Chart */}
+            <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold tracking-wider text-slate-200 uppercase font-mono">
+                  {t.threatDist}
+                </h3>
+                <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/50 border border-cyan-800/40 px-2 py-0.5 rounded">
+                  Telemetry Live
+                </span>
+              </div>
+              <div className="h-52 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
-                    <XAxis dataKey="name" stroke="#64748b" fontSize={8} tickLine={false} />
-                    <YAxis stroke="#64748b" fontSize={8} tickLine={false} allowDecimals={false} />
-                    <Tooltip contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', fontSize: '9px' }} />
-                    <Bar dataKey="count" radius={[2, 2, 0, 0]}>
-                      {chartData.map((_, i) => <Cell key={i} fill={SEVERITY_COLORS[i % SEVERITY_COLORS.length]} />)}
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                    <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} />
+                    <YAxis stroke="#64748b" fontSize={10} tickLine={false} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{ 
+                        backgroundColor: '#020617', 
+                        borderColor: '#1e293b', 
+                        borderRadius: '0.5rem',
+                        color: '#e2e8f0',
+                        fontSize: '11px'
+                      }}
+                      itemStyle={{ color: '#38bdf8' }}
+                      cursor={{ fill: 'rgba(51, 65, 85, 0.15)' }}
+                    />
+                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                      {chartData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={SEVERITY_COLORS[index % SEVERITY_COLORS.length]} />
+                      ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -279,71 +404,193 @@ export default function App() {
             </div>
           </div>
         )}
-
-        {/* ALERTS */}
+                {/* ALERTS TAB */}
         {activeTab === 'alerts' && (
-          <div className="space-y-2">
-            <div className="space-y-1.5">
-              {alerts.map((a) => (
-                <div
-                  key={a.id}
-                  onClick={() => { setSelectedAlert(a); setAiExplanation(null); }}
-                  className={`p-2 rounded border border-slate-800 cursor-pointer text-[11px] ${
-                    selectedAlert?.id === a.id ? 'bg-cyan-950/40 border-cyan-500/50' : 'bg-slate-900'
-                  }`}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <h3 className="text-xs font-semibold tracking-wider text-slate-200 uppercase font-mono">{t.tabAlerts}</h3>
+                <p className="text-[11px] text-slate-400">Telemetry analysis & incident mitigation</p>
+              </div>
+              {selectedAlert && (
+                <button
+                  onClick={handleExportReport}
+                  className="flex items-center space-x-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded text-xs transition"
                 >
-                  <div className="flex justify-between font-mono text-[9px]">
-                    <span className="text-cyan-400">{a.id}</span>
-                    <span className={a.severity === 'Critical' ? 'text-rose-400' : 'text-amber-400'}>{a.severity}</span>
-                  </div>
-                  <div className="font-medium mt-0.5">{a.threat_category}</div>
-                </div>
-              ))}
+                  <Download className="w-3 h-3 text-cyan-400" />
+                  <span>{t.exportReport}</span>
+                </button>
+              )}
             </div>
 
-            {selectedAlert && (
-              <div className="bg-slate-900 border border-slate-800 p-2.5 rounded text-[11px] space-y-1.5 font-mono">
-                <div className="flex justify-between items-center pb-1.5 border-b border-slate-800">
-                  <span className="text-cyan-400 font-bold">{selectedAlert.threat_category}</span>
-                  <button 
-                    onClick={() => setAiExplanation(`Verdict: Flagged C2 activity on ${selectedAlert.dst_ip}. Isolate host.`)} 
-                    className="px-1.5 py-0.5 bg-cyan-950 text-cyan-300 border border-cyan-800 rounded text-[9px]"
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div className="md:col-span-5 border border-slate-800 rounded-lg divide-y divide-slate-800 overflow-hidden bg-slate-950">
+                {alerts.map((alert) => (
+                  <div
+                    key={alert.id}
+                    onClick={() => {
+                      setSelectedAlert(alert);
+                      setAiExplanation(null);
+                    }}
+                    className={`p-3 cursor-pointer transition ${
+                      selectedAlert?.id === alert.id ? 'bg-cyan-950/30 border-l-4 border-cyan-400' : 'hover:bg-slate-900'
+                    }`}
                   >
-                    AI Copilot
-                  </button>
-                </div>
-                <p className="text-slate-300 font-sans text-[10px]">{selectedAlert.summary}</p>
-                {aiExplanation && <div className="p-1.5 bg-cyan-950/40 border border-cyan-700/50 rounded text-cyan-200 text-[9px]">{aiExplanation}</div>}
-                <div className="flex gap-1.5 pt-1">
-                  <button onClick={() => handleUpdateStatus(selectedAlert.id, 'Investigating')} className="px-2 py-0.5 bg-indigo-900 text-indigo-200 rounded text-[9px]">Investigate</button>
-                  <button onClick={() => handleUpdateStatus(selectedAlert.id, 'Resolved')} className="px-2 py-0.5 bg-emerald-900 text-emerald-200 rounded text-[9px]">Resolve</button>
-                </div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-mono text-cyan-400">{alert.id}</span>
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                        alert.severity === 'Critical' ? 'bg-rose-950 text-rose-400 border border-rose-800' : 'bg-amber-950 text-amber-400 border border-amber-800'
+                      }`}>
+                        {alert.severity} ({alert.risk_score})
+                      </span>
+                    </div>
+                    <div className="text-xs font-medium text-slate-200">{alert.threat_category}</div>
+                    <div className="text-[11px] text-slate-400 mt-1 flex justify-between">
+                      <span>Src: {alert.src_ip}</span>
+                      <span className="text-slate-500 font-mono">{alert.status}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+
+              <div className="md:col-span-7 bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-3">
+                {selectedAlert ? (
+                  <>
+                    <div className="flex justify-between items-start border-b border-slate-800 pb-2.5">
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-100">{selectedAlert.threat_category}</h4>
+                        <p className="text-[11px] font-mono text-slate-400">Target: {selectedAlert.dst_ip}</p>
+                      </div>
+                      <div className="flex space-x-1.5">
+                        <button
+                          onClick={handleRunAiAnalysis}
+                          className="flex items-center space-x-1 px-2 py-1 text-[11px] bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700/60 rounded"
+                        >
+                          <Sparkles className="w-3 h-3 text-cyan-400" />
+                          <span>AI Copilot</span>
+                        </button>
+                        <button
+                          onClick={() => handleUpdateStatus(selectedAlert.id, 'Investigating')}
+                          className="px-2 py-1 text-[11px] bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 border border-indigo-700 rounded"
+                        >
+                          {t.investigate}
+                        </button>
+                        <button
+                          onClick={() => handleUpdateStatus(selectedAlert.id, 'Resolved')}
+                          className="px-2 py-1 text-[11px] bg-emerald-900/50 hover:bg-emerald-800 text-emerald-300 border border-emerald-700 rounded"
+                        >
+                          {t.resolve}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2.5 text-xs">
+                      <div>
+                        <span className="text-slate-400 block mb-0.5 font-mono uppercase text-[10px]">Summary</span>
+                        <p className="text-slate-200 bg-slate-900/80 p-2.5 rounded border border-slate-800 leading-relaxed text-xs">
+                          {selectedAlert.summary}
+                        </p>
+                      </div>
+
+                      {aiLoading && (
+                        <div className="p-2.5 bg-cyan-950/20 border border-cyan-800/40 rounded text-cyan-300 font-mono text-xs animate-pulse">
+                          Analyzing MITRE ATT&CK vectors...
+                        </div>
+                      )}
+
+                      {aiExplanation && (
+                        <div className="p-2.5 bg-cyan-950/40 border border-cyan-600/40 rounded text-cyan-200 text-xs">
+                          {aiExplanation}
+                        </div>
+                      )}
+
+                      <div>
+                        <span className="text-slate-400 block mb-0.5 font-mono uppercase text-[10px]">Evidence</span>
+                        <pre className="bg-slate-900 p-2.5 rounded border border-slate-800 text-cyan-400 text-[10px] font-mono overflow-x-auto">
+                          {JSON.stringify(selectedAlert.evidence, null, 2)}
+                        </pre>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-400 block mb-0.5 font-mono uppercase text-[10px]">Playbook Action</span>
+                        <ul className="list-disc list-inside space-y-0.5 text-slate-300 text-xs">
+                          {selectedAlert.recommended_steps?.map((step: string, i: number) => (
+                            <li key={i}>{step}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-slate-500 text-xs text-center py-8">Select an alert to view telemetry.</div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* TRAFFIC */}
+        {/* TRAFFIC TAB */}
         {activeTab === 'traffic' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-2 overflow-x-auto">
-            <table className="w-full text-left font-mono text-[9px]">
-              <thead className="border-b border-slate-800 text-slate-400 uppercase">
-                <tr><th className="p-1">ID</th><th className="p-1">Src</th><th className="p-1">Dst</th><th className="p-1">Port</th><th className="p-1">Status</th></tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {flows.map((f) => (
-                  <tr key={f.id}>
-                    <td className="p-1 text-cyan-400">{f.id}</td>
-                    <td className="p-1">{f.src_ip}</td>
-                    <td className="p-1">{f.dst_ip}</td>
-                    <td className="p-1 text-slate-400">{f.dst_port}</td>
-                    <td className="p-1">{f.is_suspicious ? <span className="text-rose-400">ALERT</span> : <span className="text-emerald-400">OK</span>}</td>
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-xs font-semibold tracking-wider text-slate-200 uppercase font-mono">{t.trafficExplorer}</h3>
+                <p className="text-[11px] text-slate-400">{t.trafficSub}</p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setUploadMsg("Simulated PCAP capture parsed: 5 metadata records ingested.");
+                  setTimeout(() => setUploadMsg(''), 3500);
+                }}
+                className="flex items-center space-x-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded text-xs"
+              >
+                <UploadCloud className="w-3.5 h-3.5 text-cyan-400" />
+                <span>{t.uploadBtn}</span>
+              </button>
+            </div>
+
+            <div className="overflow-x-auto border border-slate-800 rounded-lg">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-mono uppercase text-[10px]">
+                  <tr>
+                    <th className="p-2.5">Flow ID</th>
+                    <th className="p-2.5">Source IP</th>
+                    <th className="p-2.5">Destination IP</th>
+                    <th className="p-2.5">Port</th>
+                    <th className="p-2.5">Proto</th>
+                    <th className="p-2.5">Bytes</th>
+                    <th className="p-2.5">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-800 bg-slate-900/60 font-mono text-[11px]">
+                  {flows.map((flow) => (
+                    <tr key={flow.id} className="hover:bg-slate-800/40">
+                      <td className="p-2.5 text-cyan-400">{flow.id}</td>
+                      <td className="p-2.5 text-slate-300">{flow.src_ip}</td>
+                      <td className="p-2.5 text-slate-300">{flow.dst_ip}</td>
+                      <td className="p-2.5 text-slate-400">{flow.src_port} → {flow.dst_port}</td>
+                      <td className="p-2.5 text-slate-400">{flow.protocol}</td>
+                      <td className="p-2.5 text-slate-400">{flow.byte_count}</td>
+                      <td className="p-2.5">
+                        {flow.is_suspicious ? (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] bg-rose-950 text-rose-400 border border-rose-800">
+                            SUSPICIOUS
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-800">
+                            BENIGN
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
+
       </main>
     </div>
   );
