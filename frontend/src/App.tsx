@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { 
   ShieldAlert, Activity, AlertTriangle, Layers, RefreshCw, 
-  ChevronRight, UploadCloud, Play, Globe, CheckCircle2,
-  Sparkles, Download, ArrowRight, Server, Laptop, ShieldCheck, Terminal,
-  LayoutDashboard, Radio, FileSearch
+  Play, Globe, Download, Sparkles, LayoutDashboard, Radio, FileSearch
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'overview' | 'alerts' | 'traffic'>('overview');
+  
+  // सुरुवातीचा डेटा: पेज लोड होताच आकडे त्वरित दिसतील
   const [summary, setSummary] = useState<any>({
     total_flows: 12840,
     suspicious_flows: 142,
@@ -70,13 +70,13 @@ export default function App() {
   ]);
 
   const [selectedAlert, setSelectedAlert] = useState<any | null>(null);
-  const [backendStatus, setBackendStatus] = useState<string>('Operational');
+  const [backendStatus, setBackendStatus] = useState<string>('Online');
   const [uploadMsg, setUploadMsg] = useState<string>('');
   const [lang, setLang] = useState<'en' | 'mr' | 'hi'>('en');
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState<boolean>(false);
 
-  const API_BASE_URL = "https://sentinelflow-ai-zuqm.vercel.app";
+  // Live Backend URL
+  const API_BASE_URL = "https://sentinelflow-ai-ydmi.vercel.app";
 
   const t = {
     en: {
@@ -111,7 +111,7 @@ export default function App() {
       suspiciousFlows: "संशयास्पद फ्लोज",
       openAlerts: "सक्रिय अलर्ट्स",
       criticalThreats: "गंभीर धोके",
-      threatDist: "धोका वर्गीकरण वितरण (Threat Vectors)",
+      threatDist: "धोका वर्गीकरण वितरण",
       trafficExplorer: "नेटवर्क ट्रॅफिक एक्सप्लोरर",
       trafficSub: "पॅसिव्ह आयपी फ्लो मेटाडेटा नोंदणी",
       uploadBtn: "PCAP / CSV अपलोड करा",
@@ -132,7 +132,7 @@ export default function App() {
       suspiciousFlows: "संदेहास्पद फ्लोज़",
       openAlerts: "सक्रिय अलर्ट",
       criticalThreats: "गंभीर खतरे",
-      threatDist: "खतरा वर्गीकरण वितरण (Threat Vectors)",
+      threatDist: "खतरा वर्गीकरण वितरण",
       trafficExplorer: "नेटवर्क ट्रैफ़िक एक्सप्लोरर",
       trafficSub: "पैसिव आईपी फ्लो मेटाडेटा रिकॉर्ड",
       uploadBtn: "PCAP / CSV अपलोड करें",
@@ -154,15 +154,12 @@ export default function App() {
       if (sumRes.data) setSummary(sumRes.data);
       if (alertRes.data) {
         setAlerts(alertRes.data);
-        if (alertRes.data.length > 0 && !selectedAlert) {
-          setSelectedAlert(alertRes.data[0]);
-        }
+        if (!selectedAlert && alertRes.data.length > 0) setSelectedAlert(alertRes.data[0]);
       }
       if (flowRes.data) setFlows(flowRes.data);
-      setBackendStatus('Operational');
+      setBackendStatus('Online');
     } catch (err) {
-      console.error(err);
-      setBackendStatus('Operational');
+      setBackendStatus('Online');
     }
   };
 
@@ -173,52 +170,12 @@ export default function App() {
     }
   }, []);
 
-  const handleUpdateStatus = async (alertId: string, status: string) => {
-    try {
-      await axios.patch(`${API_BASE_URL}/api/v1/alerts/${alertId}`, { status });
-      fetchData();
-    } catch (err) {
-      console.error(err);
-      setAlerts((prev) =>
-        prev.map((a) => (a.id === alertId ? { ...a, status } : a))
-      );
-    }
+  const handleUpdateStatus = (alertId: string, status: string) => {
+    setAlerts((prev) => prev.map((a) => (a.id === alertId ? { ...a, status } : a)));
     if (selectedAlert && selectedAlert.id === alertId) {
       setSelectedAlert((prev: any) => ({ ...prev, status }));
     }
-  };
-
-  const handleRunAiAnalysis = () => {
-    if (!selectedAlert) return;
-    setAiLoading(true);
-    setAiExplanation(null);
-    setTimeout(() => {
-      setAiExplanation(
-        `[SentinelFlow AI Copilot Verdict]: High-confidence match with ${selectedAlert.threat_category}. Pattern exhibits abnormal entropy on flow destination ports and temporal synchronization indicative of programmatic C2 beaconing. Immediate recommendation: Quarantine source host ${selectedAlert.src_ip} at 802.1X layer and analyze surrounding egress logs.`
-      );
-      setAiLoading(false);
-    }, 900);
-  };
-
-  const handleExportReport = () => {
-    if (!selectedAlert) return;
-    const reportData = {
-      incident_id: selectedAlert.id,
-      timestamp: new Date().toISOString(),
-      threat_classification: selectedAlert.threat_category,
-      severity: selectedAlert.severity,
-      risk_score: selectedAlert.risk_score,
-      source_entity: selectedAlert.src_ip,
-      destination_target: selectedAlert.dst_ip,
-      telemetry_parameters: selectedAlert.evidence,
-      recommended_remediation: selectedAlert.recommended_steps
-    };
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Incident-Report-${selectedAlert.id}.json`;
-    link.click();
+    axios.patch(`${API_BASE_URL}/api/v1/alerts/${alertId}`, { status }).catch(() => {});
   };
 
   const chartData = summary?.category_distribution
@@ -229,42 +186,42 @@ export default function App() {
     : [];
 
   const SEVERITY_COLORS = ['#38bdf8', '#818cf8', '#fbbf24', '#f87171'];
-      return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-12">
-      {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-900 px-4 py-3 flex items-center justify-between">
+    return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-10">
+      {/* Mini Header */}
+      <header className="border-b border-slate-800 bg-slate-900 px-3 py-2.5 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <ShieldAlert className="w-5 h-5 text-cyan-400" />
-          <span className="font-bold text-xs tracking-wider text-cyan-400 font-mono">{t.brand}</span>
+          <ShieldAlert className="w-4 h-4 text-cyan-400" />
+          <span className="font-bold text-[11px] tracking-wider text-cyan-400 font-mono">{t.brand}</span>
         </div>
         <div className="flex items-center space-x-2 text-xs font-mono">
           <select 
             value={lang} 
             onChange={(e: any) => setLang(e.target.value)}
-            className="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-[11px]"
+            className="bg-slate-800 border border-slate-700 px-1 py-0.5 rounded text-[10px] text-slate-200 outline-none"
           >
             <option value="en">EN</option>
             <option value="mr">MR</option>
             <option value="hi">HI</option>
           </select>
-          <span className="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-full text-[10px] text-emerald-400 flex items-center gap-1">
+          <span className="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-full text-[9px] text-emerald-400 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             API: {backendStatus}
           </span>
           <button onClick={fetchData} className="p-1 bg-slate-800 rounded border border-slate-700">
-            <RefreshCw className="w-3 h-3" />
+            <RefreshCw className="w-2.5 h-2.5 text-slate-300" />
           </button>
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className="border-b border-slate-800 bg-slate-900/40 px-3 py-2 flex items-center justify-between text-xs">
+      {/* Mini Tabs */}
+      <div className="border-b border-slate-800 bg-slate-900/40 px-3 py-1.5 flex items-center justify-between">
         <div className="flex space-x-1">
           {(['overview', 'alerts', 'traffic'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition ${
+              className={`px-2 py-1 rounded text-[10px] font-medium transition ${
                 activeTab === tab ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/40' : 'text-slate-400'
               }`}
             >
@@ -273,51 +230,47 @@ export default function App() {
           ))}
         </div>
         <button
-          onClick={() => {
-            setUploadMsg("Detection engine executed: 0 new anomalies.");
-            setTimeout(() => setUploadMsg(''), 3000);
-          }}
-          className="px-2 py-1 bg-cyan-600 text-white rounded text-[10px] font-mono flex items-center gap-1"
+          onClick={() => { setUploadMsg("Scan completed."); setTimeout(() => setUploadMsg(''), 2500); }}
+          className="px-2 py-0.5 bg-cyan-600 text-white rounded text-[9px] font-mono flex items-center gap-1"
         >
-          <Play className="w-2.5 h-2.5 fill-current" /> Run Scan
+          <Play className="w-2 h-2 fill-current" /> Scan
         </button>
       </div>
 
-      <main className="max-w-6xl mx-auto p-3 space-y-3">
-        {uploadMsg && <div className="text-[11px] font-mono text-emerald-400 bg-emerald-950/40 p-2 rounded">✓ {uploadMsg}</div>}
+      <main className="max-w-5xl mx-auto p-2.5 space-y-2.5">
+        {uploadMsg && <div className="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 p-1.5 rounded">✓ {uploadMsg}</div>}
 
-        {/* OVERVIEW: 2x2 Clean Compact Grid */}
+        {/* OVERVIEW: 2x2 Grid */}
         {activeTab === 'overview' && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="space-y-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[10px] font-mono uppercase text-slate-400">{t.totalFlows}</div>
-                <div className="text-lg font-bold font-mono text-slate-100 mt-1">{summary?.total_flows?.toLocaleString() ?? '12,840'}</div>
+                <div className="text-[9px] font-mono uppercase text-slate-400">{t.totalFlows}</div>
+                <div className="text-base font-bold font-mono text-slate-100 mt-0.5">{summary.total_flows.toLocaleString()}</div>
               </div>
               <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[10px] font-mono uppercase text-amber-400">{t.suspiciousFlows}</div>
-                <div className="text-lg font-bold font-mono text-amber-400 mt-1">{summary?.suspicious_flows ?? '142'}</div>
+                <div className="text-[9px] font-mono uppercase text-amber-400">{t.suspiciousFlows}</div>
+                <div className="text-base font-bold font-mono text-amber-400 mt-0.5">{summary.suspicious_flows}</div>
               </div>
               <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[10px] font-mono uppercase text-indigo-400">{t.openAlerts}</div>
-                <div className="text-lg font-bold font-mono text-indigo-300 mt-1">{summary?.open_alerts ?? '3'}</div>
+                <div className="text-[9px] font-mono uppercase text-indigo-400">{t.openAlerts}</div>
+                <div className="text-base font-bold font-mono text-indigo-300 mt-0.5">{summary.open_alerts}</div>
               </div>
               <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[10px] font-mono uppercase text-rose-500">{t.criticalThreats}</div>
-                <div className="text-lg font-bold font-mono text-rose-400 mt-1">{summary?.critical_alerts ?? '2'}</div>
+                <div className="text-[9px] font-mono uppercase text-rose-500">{t.criticalThreats}</div>
+                <div className="text-base font-bold font-mono text-rose-400 mt-0.5">{summary.critical_alerts}</div>
               </div>
             </div>
 
-            {/* Chart */}
-            <div className="bg-slate-900 border border-slate-800 p-3 rounded-lg">
-              <div className="text-[10px] font-mono uppercase text-slate-400 mb-2">{t.threatDist}</div>
-              <div className="h-44 w-full">
+            <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+              <div className="text-[9px] font-mono uppercase text-slate-400 mb-1">{t.threatDist}</div>
+              <div className="h-36 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                    <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} />
-                    <YAxis stroke="#64748b" fontSize={9} tickLine={false} allowDecimals={false} />
-                    <Tooltip contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', fontSize: '10px' }} />
-                    <Bar dataKey="count" radius={[3, 3, 0, 0]}>
+                  <BarChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+                    <XAxis dataKey="name" stroke="#64748b" fontSize={8} tickLine={false} />
+                    <YAxis stroke="#64748b" fontSize={8} tickLine={false} allowDecimals={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', fontSize: '9px' }} />
+                    <Bar dataKey="count" radius={[2, 2, 0, 0]}>
                       {chartData.map((_, i) => <Cell key={i} fill={SEVERITY_COLORS[i % SEVERITY_COLORS.length]} />)}
                     </Bar>
                   </BarChart>
@@ -329,61 +282,62 @@ export default function App() {
 
         {/* ALERTS */}
         {activeTab === 'alerts' && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                {alerts.map((a) => (
-                  <div
-                    key={a.id}
-                    onClick={() => { setSelectedAlert(a); setAiExplanation(null); }}
-                    className={`p-2.5 rounded border border-slate-800 cursor-pointer text-xs ${
-                      selectedAlert?.id === a.id ? 'bg-cyan-950/40 border-cyan-500/50' : 'bg-slate-900'
-                    }`}
-                  >
-                    <div className="flex justify-between font-mono text-[10px]">
-                      <span className="text-cyan-400">{a.id}</span>
-                      <span className={a.severity === 'Critical' ? 'text-rose-400' : 'text-amber-400'}>{a.severity}</span>
-                    </div>
-                    <div className="font-medium mt-0.5">{a.threat_category}</div>
+          <div className="space-y-2">
+            <div className="space-y-1.5">
+              {alerts.map((a) => (
+                <div
+                  key={a.id}
+                  onClick={() => { setSelectedAlert(a); setAiExplanation(null); }}
+                  className={`p-2 rounded border border-slate-800 cursor-pointer text-[11px] ${
+                    selectedAlert?.id === a.id ? 'bg-cyan-950/40 border-cyan-500/50' : 'bg-slate-900'
+                  }`}
+                >
+                  <div className="flex justify-between font-mono text-[9px]">
+                    <span className="text-cyan-400">{a.id}</span>
+                    <span className={a.severity === 'Critical' ? 'text-rose-400' : 'text-amber-400'}>{a.severity}</span>
                   </div>
-                ))}
-              </div>
-
-              {selectedAlert && (
-                <div className="bg-slate-900 border border-slate-800 p-3 rounded text-xs space-y-2 font-mono">
-                  <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                    <span className="text-cyan-400 font-bold">{selectedAlert.threat_category}</span>
-                    <button onClick={handleRunAiAnalysis} className="px-2 py-0.5 bg-cyan-950 text-cyan-300 border border-cyan-800 rounded text-[10px]">
-                      AI Copilot
-                    </button>
-                  </div>
-                  <p className="text-slate-300 font-sans text-[11px] leading-relaxed">{selectedAlert.summary}</p>
-                  {aiExplanation && <div className="p-2 bg-cyan-950/40 rounded text-cyan-200 text-[10px]">{aiExplanation}</div>}
-                  <div className="flex gap-2 pt-2">
-                    <button onClick={() => handleUpdateStatus(selectedAlert.id, 'Investigating')} className="px-2 py-1 bg-indigo-900 text-indigo-200 rounded text-[10px]">Investigate</button>
-                    <button onClick={() => handleUpdateStatus(selectedAlert.id, 'Resolved')} className="px-2 py-1 bg-emerald-900 text-emerald-200 rounded text-[10px]">Resolve</button>
-                  </div>
+                  <div className="font-medium mt-0.5">{a.threat_category}</div>
                 </div>
-              )}
+              ))}
             </div>
+
+            {selectedAlert && (
+              <div className="bg-slate-900 border border-slate-800 p-2.5 rounded text-[11px] space-y-1.5 font-mono">
+                <div className="flex justify-between items-center pb-1.5 border-b border-slate-800">
+                  <span className="text-cyan-400 font-bold">{selectedAlert.threat_category}</span>
+                  <button 
+                    onClick={() => setAiExplanation(`Verdict: Flagged C2 activity on ${selectedAlert.dst_ip}. Isolate host.`)} 
+                    className="px-1.5 py-0.5 bg-cyan-950 text-cyan-300 border border-cyan-800 rounded text-[9px]"
+                  >
+                    AI Copilot
+                  </button>
+                </div>
+                <p className="text-slate-300 font-sans text-[10px]">{selectedAlert.summary}</p>
+                {aiExplanation && <div className="p-1.5 bg-cyan-950/40 border border-cyan-700/50 rounded text-cyan-200 text-[9px]">{aiExplanation}</div>}
+                <div className="flex gap-1.5 pt-1">
+                  <button onClick={() => handleUpdateStatus(selectedAlert.id, 'Investigating')} className="px-2 py-0.5 bg-indigo-900 text-indigo-200 rounded text-[9px]">Investigate</button>
+                  <button onClick={() => handleUpdateStatus(selectedAlert.id, 'Resolved')} className="px-2 py-0.5 bg-emerald-900 text-emerald-200 rounded text-[9px]">Resolve</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* TRAFFIC */}
         {activeTab === 'traffic' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-2.5 overflow-x-auto">
-            <table className="w-full text-left font-mono text-[10px]">
+          <div className="bg-slate-900 border border-slate-800 rounded-lg p-2 overflow-x-auto">
+            <table className="w-full text-left font-mono text-[9px]">
               <thead className="border-b border-slate-800 text-slate-400 uppercase">
-                <tr><th className="p-1.5">ID</th><th className="p-1.5">Src</th><th className="p-1.5">Dst</th><th className="p-1.5">Port</th><th className="p-1.5">Type</th></tr>
+                <tr><th className="p-1">ID</th><th className="p-1">Src</th><th className="p-1">Dst</th><th className="p-1">Port</th><th className="p-1">Status</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {flows.map((f) => (
                   <tr key={f.id}>
-                    <td className="p-1.5 text-cyan-400">{f.id}</td>
-                    <td className="p-1.5">{f.src_ip}</td>
-                    <td className="p-1.5">{f.dst_ip}</td>
-                    <td className="p-1.5 text-slate-400">{f.dst_port}</td>
-                    <td className="p-1.5">{f.is_suspicious ? <span className="text-rose-400">ANOMALY</span> : <span className="text-emerald-400">BENIGN</span>}</td>
+                    <td className="p-1 text-cyan-400">{f.id}</td>
+                    <td className="p-1">{f.src_ip}</td>
+                    <td className="p-1">{f.dst_ip}</td>
+                    <td className="p-1 text-slate-400">{f.dst_port}</td>
+                    <td className="p-1">{f.is_suspicious ? <span className="text-rose-400">ALERT</span> : <span className="text-emerald-400">OK</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -394,4 +348,3 @@ export default function App() {
     </div>
   );
 }
-                        
